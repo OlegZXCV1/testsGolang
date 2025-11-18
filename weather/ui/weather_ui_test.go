@@ -8,6 +8,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// TestWeatherUINavigation uses chromedp to navigate to wttr.in and checks the page title.
 func TestWeatherUINavigation(t *testing.T) {
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
