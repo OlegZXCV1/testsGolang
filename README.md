@@ -21,3 +21,15 @@ go test ./weather/ui
 ```
 
 **Note:** The UI test `TestWeatherUINavigation` currently fails because the expected title "wttr.in" does not match the actual title "Weather report: Batumi, Georgia". This is expected as `wttr.in` dynamically generates titles based on location.
+
+## AI Tests
+
+The AI tests fetch weather data from `wttr.in` and then use the Gemini API to generate a haiku about the weather.
+
+To run the AI tests, you need to set the `GEMINI_API_KEY` environment variable with your Gemini API key (obtainable from Google AI Studio).
+
+Once the environment variable is set, navigate to the project root and execute:
+```bash
+export GEMINI_API_KEY="YOUR_API_KEY"
+go test ./weather/ai
+```
