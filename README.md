@@ -33,3 +33,15 @@ Once the environment variable is set, navigate to the project root and execute:
 export GEMINI_API_KEY="YOUR_API_KEY"
 go test ./weather/ai
 ```
+
+## Multi-Modal UI AI Tests
+
+The multi-modal UI AI tests use `chromedp` to take a screenshot of `https://wttr.in/` and then use the Gemini API to generate a description of the image.
+
+To run the multi-modal UI AI tests, you need to set the `GEMINI_API_KEY` environment variable with your Gemini API key (obtainable from Google AI Studio).
+
+Once the environment variable is set, navigate to the project root and execute:
+```bash
+export GEMINI_API_KEY="YOUR_API_KEY"
+go test ./weather/ui_mcp
+```
