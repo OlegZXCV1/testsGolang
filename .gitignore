@@ -24,3 +24,4 @@ hs_err_pid*
 replay_pid*
 /.idea/
 /weather/api/allure-results/
+/weather/api/allure-report/

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/bool64/godogx/allure"
 )
 
 var resp *http.Response
@@ -23,7 +24,11 @@ func iRequestTheWeatherFor(city string) error {
 	if city == "NonExistentCity" {
 		server = newMockServer("Not Found", http.StatusNotFound)
 	} else {
-		server = newMockServer(fmt.Sprintf("Weather for %s", city), http.StatusOK)
+		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintln(w, fmt.Sprintf("Weather for %s", city))
+		}))
 	}
 	resp, err = http.Get(server.URL)
 	if err != nil {
@@ -53,11 +58,31 @@ func theResponseShouldHaveStatusCode(statusCode int) error {
 	return nil
 }
 
+func theResponseHeaderShouldBe(headerName, headerValue string) error {
+	if resp.Header.Get(headerName) != headerValue {
+		return fmt.Errorf("expected header '%s' to be '%s', but got '%s'", headerName, headerValue, resp.Header.Get(headerName))
+	}
+	return nil
+}
+
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I am a user$`, iAmAUser)
 	ctx.Step(`^I request the weather for "([^"]*)"$`, iRequestTheWeatherFor)
 	ctx.Step(`^the response should contain "([^"]*)"$`, theResponseShouldContain)
 	ctx.Step(`^the response should have status code (\d+)$`, theResponseShouldHaveStatusCode)
+	ctx.Step(`^the response header "([^"]*)" should be "([^"]*)"$`, theResponseHeaderShouldBe)
+}
+
+func TestMain(m *testing.M) {
+	allure.RegisterFormatter()
+	godog.TestSuite{
+		Name:                "godog",
+		ScenarioInitializer: InitializeScenario,
+		Options: &godog.Options{
+			Format: "allure",
+			Paths:  []string{"features"},
+		},
+	}.Run()
 }
 
 func TestFeatures(t *testing.T) {

@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/google/generative-ai-go/genai"
@@ -111,5 +112,100 @@ func TestWeatherHaikuEmptyPrompt(t *testing.T) {
 
 	if haiku != genai.Text("A haiku about something") {
 		t.Errorf("expected haiku to be 'A haiku about something', got %q", haiku)
+	}
+}
+
+func TestWeatherHaikuLongPrompt(t *testing.T) {
+	model := &mockGenerativeModel{
+		GenerateContentFunc: func(ctx context.Context, parts ...genai.Part) (*genai.GenerateContentResponse, error) {
+			return &genai.GenerateContentResponse{
+				Candidates: []*genai.Candidate{
+					{
+						Content: &genai.Content{
+							Parts: []genai.Part{
+								genai.Text("A haiku about a long prompt"),
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	prompt := strings.Repeat("a", 1000)
+	resp, err := model.GenerateContent(context.Background(), genai.Text(prompt))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(resp.Candidates) == 0 {
+		t.Fatal("no candidates returned")
+	}
+
+	haiku := resp.Candidates[0].Content.Parts[0]
+
+	if haiku != genai.Text("A haiku about a long prompt") {
+		t.Errorf("expected haiku to be 'A haiku about a long prompt', got %q", haiku)
+	}
+}
+
+func TestWeatherHaikuSpecialChars(t *testing.T) {
+	model := &mockGenerativeModel{
+		GenerateContentFunc: func(ctx context.Context, parts ...genai.Part) (*genai.GenerateContentResponse, error) {
+			return &genai.GenerateContentResponse{
+				Candidates: []*genai.Candidate{
+					{
+						Content: &genai.Content{
+							Parts: []genai.Part{
+								genai.Text("A haiku about special characters"),
+							},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	prompt := "!@#$%^&*()"
+	resp, err := model.GenerateContent(context.Background(), genai.Text(prompt))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(resp.Candidates) == 0 {
+		t.Fatal("no candidates returned")
+	}
+
+	haiku := resp.Candidates[0].Content.Parts[0]
+
+	if haiku != genai.Text("A haiku about special characters") {
+		t.Errorf("expected haiku to be 'A haiku about special characters', got %q", haiku)
+	}
+}
+
+func TestWeatherHaikuNoContent(t *testing.T) {
+	model := &mockGenerativeModel{
+		GenerateContentFunc: func(ctx context.Context, parts ...genai.Part) (*genai.GenerateContentResponse, error) {
+			return &genai.GenerateContentResponse{
+				Candidates: []*genai.Candidate{
+					{
+						Content: &genai.Content{},
+					},
+				},
+			}, nil
+		},
+	}
+
+	resp, err := model.GenerateContent(context.Background(), genai.Text("any prompt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(resp.Candidates) == 0 {
+		t.Fatal("no candidates returned")
+	}
+
+	if len(resp.Candidates[0].Content.Parts) != 0 {
+		t.Error("expected no content to be returned")
 	}
 }

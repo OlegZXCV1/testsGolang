@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
@@ -85,5 +86,77 @@ func TestWeatherUICheckInput(t *testing.T) {
 
 	if val != "london" {
 		t.Errorf("expected input value to be 'london', got '%s'", val)
+	}
+}
+
+func TestWeatherUICheckCSSSelector(t *testing.T) {
+	server := newMockServer("<html><body><div class='weather'>sunny</div></body></html>", http.StatusOK)
+	defer server.Close()
+
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	var text string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(server.URL),
+		chromedp.Text(".weather", &text),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if text != "sunny" {
+		t.Errorf("expected text to be 'sunny', got '%s'", text)
+	}
+}
+
+func TestWeatherUICheckAttribute(t *testing.T) {
+	server := newMockServer("<html><body><a href='/weather'>weather</a></body></html>", http.StatusOK)
+	defer server.Close()
+
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	var href string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(server.URL),
+		chromedp.AttributeValue("a", "href", &href, nil),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if href != "/weather" {
+		t.Errorf("expected href to be '/weather', got '%s'", href)
+	}
+}
+
+func TestWeatherUI500Error(t *testing.T) {
+	server := newMockServer("Internal Server Error", http.StatusInternalServerError)
+	defer server.Close()
+
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	c := make(chan int64, 1)
+	chromedp.ListenTarget(ctx, func(ev interface{}) {
+		if ev, ok := ev.(*network.EventResponseReceived); ok {
+			if ev.Response.URL == server.URL {
+				c <- ev.Response.Status
+			}
+		}
+	})
+
+	err := chromedp.Run(ctx,
+		network.Enable(),
+		chromedp.Navigate(server.URL),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	status := <-c
+	if status != http.StatusInternalServerError {
+		t.Errorf("expected status code %d, got %d", http.StatusInternalServerError, status)
 	}
 }

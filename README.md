@@ -69,6 +69,18 @@ go test -json ./... | ~/bin/go-testreport > report.html
 
 After running the command, you can open `report.html` in your web browser to view the test results.
 
+### Allure Report
+
+To generate an Allure report for the BDD tests, run the following commands:
+
+```bash
+cd weather/api
+ALLURE_RESULTS_PATH=allure-results go test -v
+allure generate allure-results -o allure-report --clean
+```
+
+After running the commands, you can open `allure-report/index.html` in your web browser to view the Allure report.
+
 ### Templates
 
 Customize by providing a own [template file](https://pkg.go.dev/text/template). See also the [default markdown template](./src/report/templates/md.tmpl) which is used if the `-template` argument is left empty. With the `vars` options custom dynamic values can be passed to the template from the outside which can be resolved within the template:
