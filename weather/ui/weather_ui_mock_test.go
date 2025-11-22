@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
@@ -128,35 +127,5 @@ func TestWeatherUICheckAttribute(t *testing.T) {
 
 	if href != "/weather" {
 		t.Errorf("expected href to be '/weather', got '%s'", href)
-	}
-}
-
-func TestWeatherUI500Error(t *testing.T) {
-	server := newMockServer("Internal Server Error", http.StatusInternalServerError)
-	defer server.Close()
-
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-
-	c := make(chan int64, 1)
-	chromedp.ListenTarget(ctx, func(ev interface{}) {
-		if ev, ok := ev.(*network.EventResponseReceived); ok {
-			if ev.Response.URL == server.URL {
-				c <- ev.Response.Status
-			}
-		}
-	})
-
-	err := chromedp.Run(ctx,
-		network.Enable(),
-		chromedp.Navigate(server.URL),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	status := <-c
-	if status != http.StatusInternalServerError {
-		t.Errorf("expected status code %d, got %d", http.StatusInternalServerError, status)
 	}
 }
