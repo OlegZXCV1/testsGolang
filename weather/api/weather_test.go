@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cucumber/godog"
 	"github.com/bool64/godogx/allure"
+	"github.com/cucumber/godog"
 )
 
 var resp *http.Response

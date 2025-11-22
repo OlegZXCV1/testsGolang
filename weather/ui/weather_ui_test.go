@@ -15,7 +15,12 @@ func TestWeatherUINavigation(t *testing.T) {
 	server := newMockServer("<html><head><title>Weather report</title></head><body><h1>Weather</h1></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)

@@ -21,7 +21,12 @@ func TestWeatherUINavigationMock(t *testing.T) {
 	server := newMockServer("<html><head><title>Weather report</title></head><body><h1>Weather</h1></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
@@ -46,7 +51,12 @@ func TestWeatherUICheckH1(t *testing.T) {
 	server := newMockServer("<html><head><title>Weather report</title></head><body><h1>Big Weather</h1></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
@@ -71,7 +81,12 @@ func TestWeatherUICheckInput(t *testing.T) {
 	server := newMockServer("<html><body><input type='text' value='london'></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	var val string
@@ -92,7 +107,12 @@ func TestWeatherUICheckCSSSelector(t *testing.T) {
 	server := newMockServer("<html><body><div class='weather'>sunny</div></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	var text string
@@ -113,7 +133,12 @@ func TestWeatherUICheckAttribute(t *testing.T) {
 	server := newMockServer("<html><body><a href='/weather'>weather</a></body></html>", http.StatusOK)
 	defer server.Close()
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	var href string

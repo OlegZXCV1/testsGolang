@@ -19,7 +19,12 @@ func TestWeatherUIScreenshot(t *testing.T) {
 		t.Skip("GEMINI_API_KEY not set")
 	}
 
-	ctx, cancel := chromedp.NewContext(context.Background())
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
