@@ -22,7 +22,11 @@ func iAmAUser() error {
 
 func iRequestTheWeatherFor(city string) error {
 	var err error
-	server = newMockServer(fmt.Sprintf("Weather for %s", city), http.StatusOK)
+	if city == "NonExistentCity" {
+		server = newMockServer("Not Found", http.StatusNotFound)
+	} else {
+		server = newMockServer(fmt.Sprintf("Weather for %s", city), http.StatusOK)
+	}
 	resp, err = http.Get(server.URL)
 	if err != nil {
 		return err
@@ -43,10 +47,19 @@ func theResponseShouldContain(text string) error {
 	return nil
 }
 
+func theResponseShouldHaveStatusCode(statusCode int) error {
+	defer server.Close()
+	if resp.StatusCode != statusCode {
+		return fmt.Errorf("expected status code %d, but got %d", statusCode, resp.StatusCode)
+	}
+	return nil
+}
+
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I am a user$`, iAmAUser)
 	ctx.Step(`^I request the weather for "([^"]*)"$`, iRequestTheWeatherFor)
 	ctx.Step(`^the response should contain "([^"]*)"$`, theResponseShouldContain)
+	ctx.Step(`^the response should have status code (\d+)$`, theResponseShouldHaveStatusCode)
 }
 
 func TestFeatures(t *testing.T) {

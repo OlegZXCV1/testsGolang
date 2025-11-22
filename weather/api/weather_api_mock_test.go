@@ -100,3 +100,45 @@ func TestGetWeatherBodyEmpty(t *testing.T) {
 		t.Error("expected response body to be empty")
 	}
 }
+
+func TestPostWeatherMock(t *testing.T) {
+	server := newMockServer("method not allowed", http.StatusMethodNotAllowed)
+	defer server.Close()
+
+	resp, err := http.Post(server.URL, "application/json", nil)
+	if err != nil {
+		t.Fatalf("failed to post weather: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("expected status code %d, got %d", http.StatusMethodNotAllowed, resp.StatusCode)
+	}
+}
+
+func TestWeatherWithCustomHeader(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Custom-Header") != "my-value" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", server.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-Custom-Header", "my-value")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("failed to get weather: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+}

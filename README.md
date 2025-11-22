@@ -1,47 +1,81 @@
-# Go Weather API and UI Tests
+# Go Test Report
 
-This project contains Go tests for a weather API and a UI site.
+[![Pipeline Status](https://github.com/becheran/go-testreport/actions/workflows/go.yml/badge.svg)](https://github.com/becheran/go-testreport/actions/workflows/go.yml)
+[![Go Report Card][go-report-image]][go-report-url]
+[![PRs Welcome][pr-welcome-image]][pr-welcome-url]
+[![License][license-image]][license-url]
+[![GHAction][gh-action-image]][gh-action-url]
 
-## API Tests
+[license-url]: https://github.com/becheran/go-testreport/blob/main/LICENSE
+[license-image]: https://img.shields.io/badge/License-MIT-brightgreen.svg
+[go-report-image]: https://img.shields.io/badge/go%20report-A+-brightgreen.svg?style=flat
+[go-report-url]: https://goreportcard.com/report/github.com/becheran/go-testreport
+[pr-welcome-image]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
+[pr-welcome-url]: https://github.com/becheran/go-testreport/blob/main/CONTRIBUTING.md
+[gh-action-image]: https://img.shields.io/badge/Get-GH_Action-blue
+[gh-action-url]: https://github.com/marketplace/actions/golang-test-report
 
-The API tests verify the functionality of a weather API by making a GET request to `https://wttr.in/` and checking for a 200 OK status.
+Generate a markdown test report from the go json test result.
 
-To run the API tests, navigate to the project root and execute:
-```bash
-go test ./weather/api
+Matches perfectly with [github job summaries]( https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/) to visualize test results:
+
+![ReportExample](./doc/GitHubReport.png)
+
+The default output sorts the tests by failing and slowest execution time.
+
+## Install
+
+### Go
+
+Install via the go install command:
+
+``` sh
+go install github.com/becheran/go-testreport@latest
 ```
 
-## UI Tests
+### Binaries
 
-The UI tests use `chromedp` to navigate to `https://wttr.in/` and check the page title.
+Or use the pre-compiled binaries for Linux, Windows, and Mac OS from the [github releases page](https://github.com/becheran/go-testreport/releases).
 
-To run the UI tests, navigate to the project root and execute:
-```bash
-go test ./weather/ui
+## Usage
+
+Run the following command to get a list of all available command line options:
+
+``` sh
+go-testreport -h
 ```
 
-**Note:** The UI test `TestWeatherUINavigation` currently fails because the expected title "wttr.in" does not match the actual title "Weather report: Batumi, Georgia". This is expected as `wttr.in` dynamically generates titles based on location.
+### Input and Output
 
-## AI Tests
+When `-input` and `-output` is not set, the stdin stream will be used and return the result will be written to stdout. Will exit with a non zero exit code if at least one test failed:
 
-The AI tests fetch weather data from `wttr.in` and then use the Gemini API to generate a haiku about the weather.
-
-To run the AI tests, you need to set the `GEMINI_API_KEY` environment variable with your Gemini API key (obtainable from Google AI Studio).
-
-Once the environment variable is set, navigate to the project root and execute:
-```bash
-export GEMINI_API_KEY="YOUR_API_KEY"
-go test ./weather/ai
+``` sh
+go test ./... -json | go-testreport > result.html
 ```
 
-## Multi-Modal UI AI Tests
+Use the `-input` and `-output` file to set files for the input and output. Will always exit with zero also if tests fail:
 
-The multi-modal UI AI tests use `chromedp` to take a screenshot of `https://wttr.in/` and then use the Gemini API to generate a description of the image.
+``` sh
+go-testreport -input result.json -output result.html
+```
 
-To run the multi-modal UI AI tests, you need to set the `GEMINI_API_KEY` environment variable with your Gemini API key (obtainable from Google AI Studio).
+### Templates
 
-Once the environment variable is set, navigate to the project root and execute:
-```bash
-export GEMINI_API_KEY="YOUR_API_KEY"
-go test ./weather/ui_mcp
+Customize by providing a own [template file](https://pkg.go.dev/text/template). See also the [default markdown template](./src/report/templates/md.tmpl) which is used if the `-template` argument is left empty. With the `vars` options custom dynamic values can be passed to the template from the outside which can be resolved within the template:
+
+``` sh
+go test ./... -json | go-testreport -template=./html.tmpl -vars="Title:Test Report Linux" > $GITHUB_STEP_SUMMARY
+```
+
+### GitHub Actions
+
+The [Golang Test Report](https://github.com/marketplace/actions/golang-test-report) from the marketplace can be used to integrate the go-testreport tool into an GitHub workflow:
+
+``` yaml
+- name: Test
+  run: go test ./... -json > report.json
+- name: Report
+  uses: becheran/go-testreport@main
+  with:
+    input: report.json
 ```

@@ -66,3 +66,24 @@ func TestWeatherUICheckH1(t *testing.T) {
 		t.Errorf("expected h1 %q, got %q", expectedH1, h1)
 	}
 }
+
+func TestWeatherUICheckInput(t *testing.T) {
+	server := newMockServer("<html><body><input type='text' value='london'></body></html>", http.StatusOK)
+	defer server.Close()
+
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	var val string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(server.URL),
+		chromedp.Value("input", &val),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if val != "london" {
+		t.Errorf("expected input value to be 'london', got '%s'", val)
+	}
+}
