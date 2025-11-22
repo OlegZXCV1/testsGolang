@@ -71,15 +71,17 @@ After running the command, you can open `report.html` in your web browser to vie
 
 ### Allure Report
 
-To generate an Allure report for the BDD tests, run the following commands:
+To run all tests and generate a unified Allure report, use the following command. This will create an `allure-results` directory.
 
 ```bash
-cd weather/api
-ALLURE_RESULTS_PATH=allure-results go test -v
-allure generate allure-results -o allure-report --clean
+go test -json -cover ./... | ~/go/bin/golurectl -o allure-results
 ```
 
-After running the commands, you can open `allure-report/index.html` in your web browser to view the Allure report.
+After the tests have run, you can generate and serve the report with this command:
+
+```bash
+allure serve allure-results
+```
 
 ### Templates
 
