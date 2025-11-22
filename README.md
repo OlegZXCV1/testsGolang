@@ -59,6 +59,16 @@ Use the `-input` and `-output` file to set files for the input and output. Will 
 go-testreport -input result.json -output result.html
 ```
 
+### Running Tests
+
+To run all tests and generate an HTML report, use the following command:
+
+```bash
+go test -json ./... | ~/bin/go-testreport > report.html
+```
+
+After running the command, you can open `report.html` in your web browser to view the test results.
+
 ### Templates
 
 Customize by providing a own [template file](https://pkg.go.dev/text/template). See also the [default markdown template](./src/report/templates/md.tmpl) which is used if the `-template` argument is left empty. With the `vars` options custom dynamic values can be passed to the template from the outside which can be resolved within the template:
