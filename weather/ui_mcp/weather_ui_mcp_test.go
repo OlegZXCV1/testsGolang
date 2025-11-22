@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/chromedp/chromedp"
-	"google.golang.org/genai"
+	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 )
 
@@ -47,10 +47,12 @@ func TestWeatherUIScreenshot(t *testing.T) {
 
 	model := client.GenerativeModel("gemini-1.5-flash")
 
-	prompt := genai.Text("Describe this image of a weather website.")
-	img := genai.ImageData("png", buf)
+	prompt := []genai.Part{
+		genai.ImageData("png", buf),
+		genai.Text("Describe this image of a weather website."),
+	}
 
-	resp, err := model.GenerateContent(ctx, img, prompt)
+	resp, err := model.GenerateContent(ctx, prompt...)
 	if err != nil {
 		t.Fatal(err)
 	}

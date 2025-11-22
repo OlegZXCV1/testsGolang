@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"google.golang.org/genai"
+	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 )
 
@@ -43,9 +43,11 @@ func TestWeatherHaiku(t *testing.T) {
 		t.Fatalf("failed to read response body: %v", err)
 	}
 
-	prompt := fmt.Sprintf("Write a haiku about this weather: %s", string(body))
+	prompt := []genai.Part{
+		genai.Text(fmt.Sprintf("Write a haiku about this weather: %s", string(body))),
+	}
 
-	genResp, err := model.GenerateContent(ctx, genai.Text(prompt))
+	genResp, err := model.GenerateContent(ctx, prompt...)
 	if err != nil {
 		t.Fatal(err)
 	}
