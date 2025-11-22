@@ -14,8 +14,6 @@ import (
 var resp *http.Response
 var server *httptest.Server
 
-
-
 func iAmAUser() error {
 	return nil
 }

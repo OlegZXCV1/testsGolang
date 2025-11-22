@@ -10,8 +10,6 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-
-
 // TestWeatherUINavigation uses chromedp to navigate to wttr.in and checks the page title.
 func TestWeatherUINavigation(t *testing.T) {
 	server := newMockServer("<html><head><title>Weather report</title></head><body><h1>Weather</h1></body></html>", http.StatusOK)

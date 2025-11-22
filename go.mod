@@ -3,7 +3,6 @@ module weather
 go 1.25.4
 
 require (
-	github.com/bool64/godogx v0.1.1
 	github.com/chromedp/chromedp v0.14.2
 	github.com/cucumber/godog v0.12.6
 	github.com/google/generative-ai-go v0.20.1
