@@ -25,3 +25,5 @@ replay_pid*
 /.idea/
 /weather/api/allure-results/
 /weather/api/allure-report/
+/allure-results/
+/.idea/

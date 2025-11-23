@@ -1,62 +1,70 @@
-package ai
+package ai_test
 
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"testing"
 
 	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
+	"weather/pkg/weather/ai"
 )
 
-// TestWeatherHaiku uses the Gemini API to generate a haiku about the weather.
-func TestWeatherHaiku(t *testing.T) {
-	apiKey := os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
-		t.Skip("GEMINI_API_KEY not set")
-	}
+// mockGenerativeModel is a mock implementation of the GenerativeModel interface.
+type mockGenerativeModel struct {
+	resp *genai.GenerateContentResponse
+	err  error
+}
 
-	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+func (m *mockGenerativeModel) GenerateContent(ctx context.Context, parts ...genai.Part) (*genai.GenerateContentResponse, error) {
+	return m.resp, m.err
+}
+
+func TestGenerateHaiku(t *testing.T) {
+	mockModel := &mockGenerativeModel{
+		resp: &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{
+				{
+					Content: &genai.Content{
+						Parts: []genai.Part{genai.Text("Test haiku")},
+					},
+				},
+			},
+		},
+	}
+	generator := &ai.HaikuGenerator{Model: mockModel}
+
+	haiku, err := generator.GenerateHaiku("a prompt")
 	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Close()
-
-	model := client.GenerativeModel("gemini-1.5-flash")
-
-	resp, err := http.Get("https://wttr.in/?format=j1")
-	if err != nil {
-		t.Fatalf("failed to get weather: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("failed to read response body: %v", err)
+	if haiku != "Test haiku" {
+		t.Errorf("expected haiku 'Test haiku', got '%s'", haiku)
 	}
+}
 
-	prompt := []genai.Part{
-		genai.Text(fmt.Sprintf("Write a haiku about this weather: %s", string(body))),
+func TestGenerateHaiku_Error(t *testing.T) {
+	mockModel := &mockGenerativeModel{
+		err: fmt.Errorf("API error"),
 	}
+	generator := &ai.HaikuGenerator{Model: mockModel}
 
-	genResp, err := model.GenerateContent(ctx, prompt...)
-	if err != nil {
-		t.Fatal(err)
+	_, err := generator.GenerateHaiku("a prompt")
+	if err == nil {
+		t.Fatal("expected an error, but got none")
 	}
+}
 
-	if len(genResp.Candidates) == 0 {
-		t.Fatal("no candidates returned")
+func TestGenerateHaiku_NoContent(t *testing.T) {
+	mockModel := &mockGenerativeModel{
+		resp: &genai.GenerateContentResponse{
+			Candidates: []*genai.Candidate{},
+		},
 	}
+	generator := &ai.HaikuGenerator{Model: mockModel}
 
-	haiku := genResp.Candidates[0].Content.Parts[0]
-
-	fmt.Println(haiku)
+	_, err := generator.GenerateHaiku("a prompt")
+	if err == nil {
+		t.Fatal("expected an error for no content, but got none")
+	}
 }

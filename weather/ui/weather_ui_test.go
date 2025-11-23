@@ -1,42 +1,44 @@
-package ui
+package ui_test
 
 import (
-	"context"
+	"fmt"
 	"net/http"
-	"strings"
+	"net/http/httptest"
 	"testing"
-	"time"
-
-	"github.com/chromedp/chromedp"
+	"weather/pkg/weather/ui"
 )
 
-// TestWeatherUINavigation uses chromedp to navigate to wttr.in and checks the page title.
-func TestWeatherUINavigation(t *testing.T) {
-	server := newMockServer("<html><head><title>Weather report</title></head><body><h1>Weather</h1></body></html>", http.StatusOK)
+func newMockServer(response string, statusCode int) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(statusCode)
+		fmt.Fprintln(w, response)
+	}))
+}
+
+func TestGetPageTitle(t *testing.T) {
+	server := newMockServer(`<html><head><title>Test Title</title></head></html>`, http.StatusOK)
 	defer server.Close()
 
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.NoSandbox,
-	)
-	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-	ctx, cancel := chromedp.NewContext(allocCtx)
-	defer cancel()
-
-	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-
-	var title string
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(server.URL),
-		chromedp.Title(&title),
-	)
+	title, err := ui.GetPageTitle(server.URL)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
-	expectedTitle := "Weather report"
-	if !strings.Contains(title, expectedTitle) {
-		t.Errorf("expected title to contain %q, got %q", expectedTitle, title)
+	if title != "Test Title" {
+		t.Errorf("expected title 'Test Title', got '%s'", title)
+	}
+}
+
+func TestTakeScreenshot(t *testing.T) {
+	server := newMockServer(`<html><body><h1>Hello</h1></body></html>`, http.StatusOK)
+	defer server.Close()
+
+	buf, err := ui.TakeScreenshot(server.URL)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(buf) == 0 {
+		t.Error("expected screenshot buffer to not be empty")
 	}
 }

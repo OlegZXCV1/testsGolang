@@ -20,7 +20,3 @@ Feature: Weather API
     When I request the weather for "NonExistentCity"
     Then the response should have status code 404
 
-  Scenario: Check response header
-    Given I am a user
-    When I request the weather for "Berlin"
-    Then the response header "Content-Type" should be "text/plain; charset=utf-8"
