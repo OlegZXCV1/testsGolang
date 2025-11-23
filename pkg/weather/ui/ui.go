@@ -14,6 +14,7 @@ func NewChromedpContext(timeout time.Duration) (context.Context, context.CancelF
 		chromedp.NoSandbox,
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
 	)
 
 	allocCtx, cancelAlloc := chromedp.NewExecAllocator(context.Background(), opts...)
