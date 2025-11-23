@@ -1,31 +1,13 @@
 package ui_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 	"weather/pkg/weather/ui"
 )
-
-var (
-	testCtx    context.Context
-	cancel     context.CancelFunc
-)
-
-func TestMain(m *testing.M) {
-	var code int
-	// Set up a shared ChromeDP context
-	testCtx, cancel = ui.NewChromedpContext(30 * time.Second)
-	defer cancel()
-	// Run the tests
-	code = m.Run()
-
-	os.Exit(code)
-}
 
 func newMockServer(response string, statusCode int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +19,9 @@ func newMockServer(response string, statusCode int) *httptest.Server {
 func TestGetPageTitle(t *testing.T) {
 	server := newMockServer(`<html><head><title>Test Title</title></head></html>`, http.StatusOK)
 	defer server.Close()
+
+	testCtx, cancel := ui.NewChromedpContext(30 * time.Second)
+	defer cancel()
 
 	title, err := ui.GetPageTitle(testCtx, server.URL)
 	if err != nil {
@@ -51,6 +36,9 @@ func TestGetPageTitle(t *testing.T) {
 func TestTakeScreenshot(t *testing.T) {
 	server := newMockServer(`<html><body><h1>Hello</h1></body></html>`, http.StatusOK)
 	defer server.Close()
+
+	testCtx, cancel := ui.NewChromedpContext(30 * time.Second)
+	defer cancel()
 
 	buf, err := ui.TakeScreenshot(testCtx, server.URL)
 	if err != nil {
