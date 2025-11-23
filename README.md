@@ -15,14 +15,6 @@
 [gh-action-image]: https://img.shields.io/badge/Get-GH_Action-blue
 [gh-action-url]: https://github.com/marketplace/actions/golang-test-report
 
-Generate a markdown test report from the go json test result.
-
-Matches perfectly with [github job summaries]( https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/) to visualize test results:
-
-![ReportExample](./doc/GitHubReport.png)
-
-The default output sorts the tests by failing and slowest execution time.
-
 ## Install
 
 ### Go
