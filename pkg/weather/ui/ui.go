@@ -9,7 +9,7 @@ import (
 )
 
 // newChromedpContext creates a new chromedp context with a timeout and no-sandbox option.
-func newChromedpContext(timeout time.Duration) (context.Context, context.CancelFunc) {
+func NewChromedpContext(timeout time.Duration) (context.Context, context.CancelFunc) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.NoSandbox,
 		chromedp.Flag("headless", true),
@@ -29,9 +29,7 @@ func newChromedpContext(timeout time.Duration) (context.Context, context.CancelF
 }
 
 // GetPageTitle navigates to a URL and returns the page title.
-func GetPageTitle(url string) (string, error) {
-	ctx, cancel := newChromedpContext(15 * time.Second)
-	defer cancel()
+func GetPageTitle(ctx context.Context, url string) (string, error) {
 
 	var title string
 	err := chromedp.Run(ctx,
@@ -45,9 +43,7 @@ func GetPageTitle(url string) (string, error) {
 }
 
 // TakeScreenshot navigates to a URL and takes a full screenshot.
-func TakeScreenshot(url string) ([]byte, error) {
-	ctx, cancel := newChromedpContext(20 * time.Second)
-	defer cancel()
+func TakeScreenshot(ctx context.Context, url string) ([]byte, error) {
 
 	var buf []byte
 	err := chromedp.Run(ctx,
